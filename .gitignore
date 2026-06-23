@@ -1,0 +1,67 @@
+# ==========================================
+# Ambiente Virtual e Dependências
+# ==========================================
+venv/
+.venv/
+env/
+lib/
+lib64/
+bin/
+include/
+share/
+pyvenv.cfg
+pip-selfcheck.json
+
+# ==========================================
+# Segurança e Credenciais (CRÍTICO)
+# ==========================================
+.env
+.env.*
+*.pem
+*.key
+*.cert
+secrets.json
+
+# ==========================================
+# Dados de Clientes e Outputs (LGPD Guard)
+# ==========================================
+# Ignora qualquer pasta de armazenamento local de PDFs, auditorias ou relatórios
+**/storage/clients/
+**/outputs/
+**/docs/
+*.tmp
+pipeline_audit.json
+peticao_inicial.md
+*.pdf
+*.docx
+
+# ==========================================
+# Cache do Python e Compilação
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ==========================================
+# Configurações de IDEs (VS Code, PyCharm)
+# ==========================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# ==========================================
+# Arquivos de Sistema Operacional
+# ==========================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.iniclear

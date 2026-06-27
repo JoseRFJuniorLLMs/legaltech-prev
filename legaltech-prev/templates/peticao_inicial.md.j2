@@ -1,0 +1,77 @@
+# EXCELENTÍSSIMO SENHOR DOUTOR JUIZ FEDERAL DA ____ VARA FEDERAL DA SEÇÃO JUDICIÁRIA DE ___________
+
+**{{ autor_nome }}**, brasileiro(a), portador(a) do CPF nº **{{ autor_cpf }}**, residente e domiciliado(a) em _________, vem, respeitosamente, à presença de Vossa Excelência, por meio de seus advogados, propor a presente
+
+## AÇÃO CONCESSÓRIA DE APOSENTADORIA
+
+em face do **INSTITUTO NACIONAL DO SEGURO SOCIAL - INSS**, autarquia federal, pelos fatos e fundamentos a seguir expostos:
+
+---
+
+## 1. DOS FATOS
+
+O(A) Autor(a) é segurado(a) do Regime Geral de Previdência Social, tendo laborado em diversas empresas ao longo de sua vida, conforme faz prova o Extrato do Cadastro Nacional de Informações Sociais (CNIS) anexo.
+
+{{ text_fatos }}
+
+### 1.1 Do Tempo de Contribuição Apurado
+
+Após a correta consolidação dos vínculos e tratamento de concomitâncias, apurou-se que o(a) Autor(a) possui o seguinte tempo de contribuição líquido:
+
+- **Tempo Total**: {{ tempo_anos }} anos, {{ tempo_meses }} meses e {{ tempo_dias }} dias (Total: {{ tempo_total_dias }} dias).
+- **Idade na DER**: {{ idade_na_der }}
+
+### 1.2 Dos Vínculos Empregatícios e Anomalias do CNIS
+
+Abaixo listamos os vínculos considerados para a apuração:
+
+{% for vinculo in vinculos %}
+* **Empregador**: {{ vinculo.empregador }}
+  * Período: {{ vinculo.data_inicio }} a {{ vinculo.data_fim }}
+  * Dias Contados: {{ vinculo.dias_contados }}
+  * Indicadores: {{ vinculo.indicadores | join(', ') if vinculo.indicadores else 'Nenhum' }}
+{% endfor %}
+
+---
+
+## 2. DOS FUNDAMENTOS JURÍDICOS
+
+{{ text_teses }}
+
+### 2.1 Do Enquadramento Legal
+
+Com base no tempo apurado, o(a) Autor(a) preenche integralmente os requisitos para a concessão do benefício sob a égide da regra: **{{ regra_nome }}** ({{ regra_artigo }}).
+
+**Demonstrativo do Cumprimento dos Requisitos:**
+{% for req in regra_requisitos %}
+- **{{ req.criterio }}**: Exigido: {{ req.exigido }} | Atual: {{ req.atual }} -> {% if req.cumprido %}CUMPRIDO{% else %}NÃO CUMPRIDO{% endif %}
+{% endfor %}
+
+---
+
+## 3. DOS PEDIDOS
+
+Diante do exposto, requer a Vossa Excelência:
+
+a) A citação do Instituto Nacional do Seguro Social (INSS), na pessoa de seu representante legal, para que, querendo, apresente defesa no prazo legal;
+
+b) A procedência total da ação, para:
+   - Reconhecer e averbar os vínculos e períodos apontados, sanando as anomalias do CNIS;
+   - Conceder o benefício de Aposentadoria (Regra: {{ regra_nome }}), com Data de Início do Benefício (DIB) fixada na DER ({{ data_der }});
+   
+c) O pagamento das parcelas vencidas e vincendas, corrigidas monetariamente e acrescidas de juros de mora legais desde a citação;
+
+d) A condenação do Réu ao pagamento de honorários advocatícios, nos termos do art. 85 do CPC.
+
+Protesta provar o alegado por todos os meios de prova em direito admitidos.
+
+Dá-se à causa o valor de R$ [VALOR DA CAUSA].
+
+Termos em que,
+Pede deferimento.
+
+[Local], [Data].
+
+___________________________________________________
+**ADVOGADO**
+OAB/UF nº XXXXX

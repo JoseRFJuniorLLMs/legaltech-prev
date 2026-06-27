@@ -16,8 +16,13 @@ class VinculoEmpregaticio(BaseModel):
     indicadores_gerais: List[str] = Field(default=[])
 
 class ExtratoCNISClean(BaseModel):
-    cpf: str = Field(..., pattern=r"^\\d{11}$")
+    cpf: str = Field(..., pattern=r"^\d{11}$")
     nome: str
     data_nascimento: date
     nit: str
+    sexo: Optional[str] = Field(
+        None,
+        description="'M' ou 'F'. Necessário para enquadramento nas regras da EC 103/2019 "
+                    "(idade mínima e tempo diferem por sexo). None se não identificado no CNIS.",
+    )
     vinculos: List[VinculoEmpregaticio]

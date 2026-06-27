@@ -1,40 +1,23 @@
 import json
-import httpx
-import pdfplumber  # <-- Biblioteca necessária instalada na venv
-from pathlib import Path
 from app.schemas.cnis_schema import ExtratoCNISClean
+from app.services.llm_client import LLMClient
+
 
 class AgentParser:
-    def __init__(self, api_key: str = None, base_url: str = "http://127.0.0.1:1234/v1"):
-        # Alterado para 127.0.0.1 para evitar falhas de conexão no Windows
-        self.base_url = base_url
+    def __init__(self, llm: LLMClient = None, **_ignored):
+        self.llm = llm or LLMClient()
 
-    async def parse_cnis(self, file_path: Path, cpf: str) -> ExtratoCNISClean:
-        # =================================================================
-        # CAMADA DE EXTRAÇÃO DE PDF REAL
-        # =================================================================
-        raw_text = ""
-        print(f"📄 [PARSER] Abrindo e extraindo páginas do PDF: {file_path.name}")
-        
-        with pdfplumber.open(file_path) as pdf:
-            for i, page in enumerate(pdf.pages):
-                text_page = page.extract_text()
-                if text_page:
-                    raw_text += f"\n--- PÁGINA {i+1} ---\n" + text_page
-
-        # Expandido o limite de leitura para acomodar o volume de dados de um CNIS real
-        raw_text = raw_text[:50000] 
-        # =================================================================
-
+    async def extract_json_from_text(self, raw_text: str, cpf: str) -> ExtratoCNISClean:
         system_prompt = (
             "Você é um extrator de dados JSON de precisão militar especializado no CNIS do INSS brasileiro.\n"
-            "Retorne ESTRITAMENTE um objeto JSON válido que obedeça ao esquema definido. Não insira markdown além de "
-            "tags de bloco json, explicações ou texto introdutório.\n"
+            "Retorne ESTRITAMENTE um objeto JSON válido que obedeça ao esquema definido. Sem markdown, "
+            "sem explicações, sem texto introdutório.\n"
             "Formato Mandatório:\n"
             "{\n"
             "  \"cpf\": \"11 digitos numéricos\",\n"
             "  \"nome\": \"Nome Completo\",\n"
             "  \"data_nascimento\": \"YYYY-MM-DD\",\n"
+            "  \"sexo\": \"M ou F se constar no extrato; caso contrário null\",\n"
             "  \"nit\": \"Número NIT\",\n"
             "  \"vinculos\": [\n"
             "    {\n"
@@ -48,23 +31,15 @@ class AgentParser:
             "  ]\n"
             "}"
         )
+        user_content = (
+            f"Texto bruto do PDF do CNIS para extração:\n{raw_text}\n\n"
+            f"Filtrar para o CPF: {cpf}"
+        )
 
-        payload = {
-            "model": "local-model",
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Texto bruto do PDF para extração:\n{raw_text}\n\nFiltrar para CPF: {cpf}"}
-            ],
-            "temperature": 0.0
-        }
+        content = await self.llm.chat(
+            system_prompt, user_content, temperature=0.0, json_output=True)
 
-        # Timeout estendido para 180s pois o processamento de PDFs longos exige mais processamento local
-        async with httpx.AsyncClient(timeout=180.0) as client:
-            response = await client.post(f"{self.base_url}/chat/completions", json=payload)
-            response.raise_for_status()
-            result = response.json()
-
-        content = result["choices"][0]["message"]["content"].strip()
+        content = content.strip()
         if "```json" in content:
             content = content.split("```json")[1].split("```")[0].strip()
         elif "```" in content:

@@ -9,7 +9,7 @@ class LocalStorageService:
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
     def _sanitize_cpf(self, cpf: str) -> str:
-        sanitized = re.sub(r"\\D", "", cpf)
+        sanitized = re.sub(r"\D", "", cpf)
         if len(sanitized) != 11:
             raise HTTPException(status_code=400, detail="CPF inválido. Deve conter 11 dígitos numéricos.")
         return sanitized
@@ -28,14 +28,15 @@ class LocalStorageService:
         return client_path
 
     async def save_uploaded_file(self, cpf: str, file: UploadFile, filename: str) -> Path:
+        import aiofiles
         client_dir = self.get_client_dir(cpf)
         target_path = client_dir / "docs" / filename
         
         temp_path = target_path.with_suffix(".tmp")
         try:
-            with open(temp_path, "wb") as f:
+            async with aiofiles.open(temp_path, "wb") as f:
                 content = await file.read()
-                f.write(content)
+                await f.write(content)
             os.replace(temp_path, target_path) # Escrita atômica segura
             return target_path
         except Exception as e:

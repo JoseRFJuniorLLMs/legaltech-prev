@@ -6,6 +6,7 @@ import json
 import time
 import secrets
 import logging
+import tempfile
 from uuid import uuid4
 from pathlib import Path
 from datetime import datetime, timezone
@@ -26,7 +27,10 @@ def _now() -> str:
 class LeadRepository:
     def __init__(self, hera: Optional[HeraClient] = None) -> None:
         self.hera = hera or HeraClient()
-        self.fallback_path = Path("/tmp/legaltech_storage/_leads/leads_events.jsonl").resolve()
+        # B1 Fix: usar o diretório temporário nativo do SO (funciona em Windows e Linux).
+        # No Windows, Path("/tmp/...") vira C:\tmp\ e pode não existir.
+        tmp_root = Path(tempfile.gettempdir()) / "legaltech_storage" / "_leads"
+        self.fallback_path = tmp_root / "leads_events.jsonl"
         self.fallback_path.parent.mkdir(parents=True, exist_ok=True)
 
     # ----------------------------------------------------------------- escrita

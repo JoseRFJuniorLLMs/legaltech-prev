@@ -42,7 +42,7 @@ async def rodar_teste_pipeline_real():
 
     # 2. Instanciar o Supervisor e disparar a máquina de estados
     print("🤖 [SUPERVISOR] Ativando a esteira de agentes locais via HTTP...")
-    supervisor = PipelineSupervisor(anthropic_api_key="local-bypass")
+    supervisor = PipelineSupervisor()
     
     resultado = await supervisor.execute_pipeline(cpf_teste, nome_final_pdf)
 

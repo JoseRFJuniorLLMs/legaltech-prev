@@ -66,13 +66,13 @@ def create_lead(body: LeadCreateIn):
 
 
 @app.post("/api/leads/{lead_id}/contato")
-def set_contato(lead_id: str, body: ContatoIn):
+async def set_contato(lead_id: str, body: ContatoIn):
     lead = repo.get(lead_id)
     if not lead:
         raise HTTPException(status_code=404, detail="Lead não encontrado.")
     token = repo.set_contato(lead_id, body.email, body.whatsapp)
     link = f"{settings.BASE_URL}/enviar-cnis?token={token}"
-    delivery = notifier.send_link(body.email, link, body.whatsapp)
+    delivery = await notifier.send_link(body.email, link, body.whatsapp)
     return {"lead_id": lead_id, "token": token, "link": link, "status": "link_sent", "envio": delivery}
 
 
@@ -118,7 +118,7 @@ async def upload_cnis(lead_id: str, file: UploadFile = File(...), token_data: di
 
     if ok:
         peticao = storage.get_client_dir(cpf) / "outputs" / "peticao_inicial.md"
-        notifier.send_peticao(lead, peticao if peticao.exists() else None)
+        await notifier.send_peticao(lead, peticao if peticao.exists() else None)
 
     repo.mark_processed(lead_id, ok, result.get("error") or "ok")
     return {

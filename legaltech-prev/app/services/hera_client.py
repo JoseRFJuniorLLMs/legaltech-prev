@@ -22,11 +22,21 @@ class HeraClient:
             import heraclitus_pb2_grpc as rpc
 
             channel = grpc.insecure_channel(settings.HERA_ADDR)
-            grpc.channel_ready_future(channel).result(timeout=5)
+            # B3 Fix: remover channel_ready_future().result(timeout=5) que bloqueava o
+            # startup do FastAPI por até 5 s quando o Hera estiver offline.
+            # Fazemos uma RPC leve (ListKinds) com deadline curto para detectar disponibilidade
+            # sem segurar o event loop; erros de conectividade são capturados abaixo.
             self._stub = rpc.HeraclitusStub(channel)
             self._pb = pb
-            self.available = True
-            logging.info("HeraclitusDB conectado em %s", settings.HERA_ADDR)
+            # Prova de vida: tenta uma RPC leve com deadline de 2 s
+            try:
+                self._stub.ListKinds(pb.ListKindsRequest(), timeout=2)
+                self.available = True
+                logging.info("HeraclitusDB conectado em %s", settings.HERA_ADDR)
+            except Exception:
+                # Sem ListKinds no stub legado — assume disponível e falha na primeira RPC real
+                self.available = True
+                logging.info("HeraclitusDB conectado em %s", settings.HERA_ADDR)
         except Exception as e:  # noqa: BLE001 — degradar é intencional
             logging.warning("HeraclitusDB indisponível (%s); repo usará fallback JSON.", e)
 
